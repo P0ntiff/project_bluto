@@ -11,7 +11,9 @@
 `npm install -g ganache-cli`
 
 
-## Useful commands
+## Key Commands
+
+  Installing dependencies:        `yarn install`
 
   Running the app:                `react-native start`
 
