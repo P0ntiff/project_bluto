@@ -35,4 +35,6 @@
 
   Instructions for Android and iOS emulators from original repo [here](https://www.trufflesuite.com/boxes/drizzle-react-native)
 
+  Instructions for running on Android emulator / device [here](https://reactnative.dev/docs/running-on-device) 
+
   Good resource for setting up the Android environment, under the "React Native CLI Quickstart" tab [here](https://reactnative.dev/docs/environment-setup).

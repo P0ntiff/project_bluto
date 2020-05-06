@@ -1,4 +1,4 @@
-package com.drizzlereactnativetutorial;
+package com.projectbluto;
 
 import android.app.Application;
 

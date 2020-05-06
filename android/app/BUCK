@@ -45,12 +45,12 @@ android_library(
 
 android_build_config(
     name = "build_config",
-    package = "com.drizzlereactnativetutorial",
+    package = "com.projectbluto",
 )
 
 android_resource(
     name = "res",
-    package = "com.drizzlereactnativetutorial",
+    package = "com.projectbluto",
     res = "src/main/res",
 )
 
