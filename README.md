@@ -16,6 +16,8 @@ Installing dependencies (first-time setup): `yarn install`
 
 Running the dApp: `react-native start` or `npx react-native start`
 
+Running Ganache (the private test chain): `ganache-cli -b 3` or use the Ganache GUI (below)
+
 Compile and migrate (deploy) contracts: `truffle compile && truffle migrate`
 
 Android: Reverse ganache ports: `adb reverse tcp:8545 tcp:8545` (this allows the app to interact with the ganache chain)
@@ -27,6 +29,11 @@ Test contracts: `truffle test`
 Test dapp: `yarn test`
 
 iOS: Run dapp (simulator only): `react-native run-ios`
+
+## Ganache GUI 
+
+Follow the instructions from the Truffle docs [here](https://www.trufflesuite.com/docs/ganache/quickstart)
+
 
 ## Other
 
