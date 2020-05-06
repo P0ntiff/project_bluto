@@ -10,31 +10,28 @@
 
 `npm install -g ganache-cli`
 
-
 ## Key Commands
 
-  Installing dependencies:        `yarn install`
+Installing dependencies (first-time setup): `yarn install`
 
-  Running the app:                `react-native start` or `npx react-native start`
+Running the dApp: `react-native start` or `npx react-native start`
 
-  Compile contracts:              `truffle compile`
+Compile and migrate (deploy) contracts: `truffle compile && truffle migrate`
 
-  Migrate (deploy) contracts:              `truffle migrate`
+Android: Reverse ganache ports: `adb reverse tcp:8545 tcp:8545` (this allows the app to interact with the ganache chain)
 
-  Test contracts:                 `truffle test`
+Android: Run dApp: `react-native run-android` or `npx react-native run-android` (requires environment setup, see below)
 
-  Test dapp:                      `yarn test`
+Test contracts: `truffle test`
 
-  Android: Run dapp:              `react-native run-android`
+Test dapp: `yarn test`
 
-  iOS: Run dapp (simulator only): `react-native run-ios`
+iOS: Run dapp (simulator only): `react-native run-ios`
 
-  Android: Reverse ganache ports: adb reverse tcp:8545 tcp:8545
+## Other
 
-## Other 
+Original repo instructions [here](https://www.trufflesuite.com/boxes/drizzle-react-native)
 
-  Instructions for Android and iOS emulators from original repo [here](https://www.trufflesuite.com/boxes/drizzle-react-native)
+Instructions for running on Android emulator / device [here](https://reactnative.dev/docs/running-on-device)
 
-  Instructions for running on Android emulator / device [here](https://reactnative.dev/docs/running-on-device) 
-
-  Good resource for setting up the Android environment, under the "React Native CLI Quickstart" tab [here](https://reactnative.dev/docs/environment-setup).
+Good resource for setting up the Android environment under the "React Native CLI Quickstart" tab [here](https://reactnative.dev/docs/environment-setup).
