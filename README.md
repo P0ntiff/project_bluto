@@ -1,6 +1,6 @@
-# Project Bluto: COMS4507 Project
+# Project Bluto
 
-### A decentralised contact tracing dApp
+### Decentralised contact tracing dApp based on Ethereum smart contracts.
 
 (Fork of [Truffle/React-Native box](https://www.trufflesuite.com/boxes/drizzle-react-native))
 
