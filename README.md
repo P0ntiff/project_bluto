@@ -15,7 +15,7 @@
 
   Installing dependencies:        `yarn install`
 
-  Running the app:                `react-native start`
+  Running the app:                `react-native start` or `npx react-native start`
 
   Compile contracts:              `truffle compile`
 
@@ -34,3 +34,5 @@
 ## Other 
 
   Instructions for Android and iOS emulators from original repo [here](https://www.trufflesuite.com/boxes/drizzle-react-native)
+
+  Good resource for setting up the Android environment, under the "React Native CLI Quickstart" tab [here](https://reactnative.dev/docs/environment-setup).
