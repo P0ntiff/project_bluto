@@ -1,8 +1,12 @@
 import React from "react";
-import { Text, View, Button, TextInput, StyleSheet } from "react-native";
+import { Text, View, Button, TextInput, TouchableOpacity } from "react-native";
 
 class AuthorityView extends React.Component {
-  state = { dataKey: null, stackId: null, text: "" };
+  state = { emailKey: null, 
+            phoneKey: null, 
+            stackId: null, 
+            text: "", 
+            myAddress: null };
 
   submit = () => {
     this.setValue(this.state.text);
@@ -38,43 +42,59 @@ class AuthorityView extends React.Component {
     return null;
   };
 
-  displayContractState = () => {
-    // get the contract state from drizzleState
-    const { MyStringStore } = this.props.drizzleState.contracts;
-
-    // using the saved `dataKey`, get the variable we're interested in
-    const myString = MyStringStore.myString[this.state.dataKey];
-
-    // if it exists, then we display its value
-    return <Text>Some stored string: {myString && myString.value}</Text>;
-  }
-
   displayAddress = () => {
-    //get the address from drizzleState
-    //authority modelled as address 0
-    const myAddress = this.props.drizzleState.accounts[0];
 
     return <View style={this.props.styles.bodySection}>
             <Text style={this.props.styles.subHeading}> Authority address: </Text>
-            <Text style={this.props.styles.bodyText}> {myAddress} </Text>
+            <Text style={this.props.styles.bodyText}> {this.state.myAddress} </Text>
           </View>
   }
 
-
-  displayContactDetails = () => {
-
-    
+  setContactDetails = () => {
+    //test
   }
 
+  displayContactDetails = () => {
+    const { AuthorityRegistry } = this.props.drizzleState.contracts;
+
+    const email = AuthorityRegistry.getContactEmailForAuthority[this.state.emailKey];
+    const phone = AuthorityRegistry.getContactPhoneForAuthority[this.state.phoneKey];
+
+    if (!email) {
+      //
+    }
+    return <View style={this.props.styles.bodySection}>
+            <View style={{flexDirection : "row", justifyContent: "space-between"}}>
+              <View>
+                <Text style={this.props.styles.subHeading}> On-Ledger Email: </Text>
+                <Text style={this.props.styles.bodyText}> Email is: {email && email.value} </Text>
+                <Text style={this.props.styles.subHeading}> On-Ledger Phone: </Text>
+                <Text style={this.props.styles.bodyText}> Phone is: {phone && phone.value} </Text>
+              </View> 
+              <View style={{justifyContent : 'center'}}>
+                <TouchableOpacity onPress={this.setContactDetails} 
+                    style={[this.props.styles.buttonStyle, { backgroundColor : '#4B0082'}]}> 
+                  <Text style={this.props.styles.buttonText}>Update</Text>  
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+  }
+
+  
   componentDidMount() {
-    const { drizzle, drizleState } = this.props;
-    const contract = drizzle.contracts.MyStringStore;
+    const contract = this.props.drizzle.contracts.AuthorityRegistry;
 
-    // let drizzle know we want to watch the `myString` method
-    const dataKey = contract.methods["myString"].cacheCall();
+    //get the address from drizzleState
+    //authority modelled as address 0
+    const myAddress = this.props.drizzleState.accounts[0];
+    this.setState({ myAddress });
 
-    // save the `dataKey` to local component state for later reference
-    this.setState({ dataKey });
+    emailKey = contract.methods.getContactEmailForAuthority.cacheCall(myAddress);
+    this.setState({ emailKey });
+
+    phoneKey = contract.methods.getContactPhoneForAuthority.cacheCall(myAddress);
+    this.setState({ phoneKey });
   }
 
 
@@ -86,15 +106,7 @@ class AuthorityView extends React.Component {
         </View>
         <View style={this.props.styles.bodyWrapper}>
           {this.displayAddress()}          
-          <View>
-            <TextInput
-              style={{ height: 40, borderColor: "gray", borderWidth: 1 }}
-              onChangeText={text => this.setState({ text })}
-              value={this.state.text}
-              placeholder="Enter some text"
-            />
-            <Button title="Submit" onPress={this.submit} color='#4B0082' />
-          </View>
+          {this.displayContactDetails()}
           <Text>{this.getTxStatus()}</Text>
         </View>
       </View>

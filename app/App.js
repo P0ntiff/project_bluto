@@ -124,6 +124,18 @@ const styles = StyleSheet.create({
   },
   bodyText: {
     //
+  },
+  buttonStyle: {
+    height: 40,
+    width: 100,
+    justifyContent: 'center',
+    borderRadius: 5,
+  },
+  buttonText: {
+    textAlign: 'center',
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 16,
   }
 
 });

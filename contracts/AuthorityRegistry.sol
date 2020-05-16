@@ -113,7 +113,7 @@ contract AuthorityRegistry {
     }
 
     function getContactEmailForAuthority(address authAddr)
-        public view returns (string memory phone)
+        public view returns (string memory email)
     {
         require(authorities[authAddr].exists, "requested authority does not exist");
         return authorities[authAddr].contactDetails.emailAddress;
