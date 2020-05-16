@@ -89,16 +89,11 @@ export default class App extends Component<Props> {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    flexDirection: "column",
-    justifyContent: "space-evenly",
     alignItems: "center",
     backgroundColor: "#F5FCFF",
   },
   mainView: {
     flex: 5,
-    flexDirection: "column",
-    justifyContent: "space-around",
-    position: "relative",
   },
   floatingButton: {
     flex: 1,
@@ -111,5 +106,24 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 20,
     textAlign: 'center'
+  },
+  titleWrapper: {
+    justifyContent: 'center',
+    height: 50,
+    //backgroundColor: 'rgba(52, 52, 52, 0.2)'
+  },
+  bodyWrapper: {
+    height: 400,
+    //backgroundColor: 'rgba(52, 52, 52, 0.4)',
+  },
+  bodySection: {
+    height: 100,
+  },
+  subHeading: {
+    fontWeight: 'bold',
+  },
+  bodyText: {
+    //
   }
+
 });

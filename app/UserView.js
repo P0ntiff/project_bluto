@@ -64,16 +64,20 @@ class UserView extends React.Component {
   render() {
     return (
       <View>
-        <Text style={[this.props.styles.title, { color : '#008000'}]}> User View </Text>
-        {this.displayContractState()}
-        <TextInput
-          style={{ height: 40, borderColor: "gray", borderWidth: 1 }}
-          onChangeText={text => this.setState({ text })}
-          value={this.state.text}
-          placeholder="Enter some text"
-        />
-        <Button title="Submit" onPress={this.submit} color='#008000' />
-        <Text>{this.getTxStatus()}</Text>
+        <View style={this.props.styles.titleWrapper}>
+          <Text style={[this.props.styles.title, { color : '#008000'}]}> User View </Text>
+        </View>
+        <View style={this.props.styles.bodyWrapper}>
+          {this.displayContractState()}
+          <TextInput
+            style={{ height: 40, borderColor: "gray", borderWidth: 1 }}
+            onChangeText={text => this.setState({ text })}
+            value={this.state.text}
+            placeholder="Enter some text"
+          />
+          <Button title="Submit" onPress={this.submit} color='#008000' />
+          <Text>{this.getTxStatus()}</Text>
+        </View>
       </View>
     );
   }

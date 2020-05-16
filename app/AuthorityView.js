@@ -33,7 +33,7 @@ class AuthorityView extends React.Component {
 
     // otherwise, return the transaction status
     if (transactions[txHash] && transactions[txHash].status)
-      return `Transaction status: ${transactions[txHash].status}`;
+      return `Txn ${transactions[txHash].status}`;
 
     return null;
   };
@@ -47,6 +47,23 @@ class AuthorityView extends React.Component {
 
     // if it exists, then we display its value
     return <Text>Some stored string: {myString && myString.value}</Text>;
+  }
+
+  displayAddress = () => {
+    //get the address from drizzleState
+    //authority modelled as address 0
+    const myAddress = this.props.drizzleState.accounts[0];
+
+    return <View style={this.props.styles.bodySection}>
+            <Text style={this.props.styles.subHeading}> Authority address: </Text>
+            <Text style={this.props.styles.bodyText}> {myAddress} </Text>
+          </View>
+  }
+
+
+  displayContactDetails = () => {
+
+    
   }
 
   componentDidMount() {
@@ -64,16 +81,22 @@ class AuthorityView extends React.Component {
   render() {
     return (
       <View>
-        <Text style={[this.props.styles.title, { color : '#4B0082'}]}> Authority View </Text>
-        {this.displayContractState()}
-        <TextInput
-          style={{ height: 40, borderColor: "gray", borderWidth: 1 }}
-          onChangeText={text => this.setState({ text })}
-          value={this.state.text}
-          placeholder="Enter some text"
-        />
-        <Button title="Submit" onPress={this.submit} color='#4B0082' />
-        <Text>{this.getTxStatus()}</Text>
+        <View style={this.props.styles.titleWrapper}>
+          <Text style={[this.props.styles.title, { color : '#4B0082'}]}> Authority View </Text>
+        </View>
+        <View style={this.props.styles.bodyWrapper}>
+          {this.displayAddress()}          
+          <View>
+            <TextInput
+              style={{ height: 40, borderColor: "gray", borderWidth: 1 }}
+              onChangeText={text => this.setState({ text })}
+              value={this.state.text}
+              placeholder="Enter some text"
+            />
+            <Button title="Submit" onPress={this.submit} color='#4B0082' />
+          </View>
+          <Text>{this.getTxStatus()}</Text>
+        </View>
       </View>
     );
   }

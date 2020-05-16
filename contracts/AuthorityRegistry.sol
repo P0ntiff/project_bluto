@@ -32,7 +32,7 @@ contract AuthorityRegistry {
 
     constructor() public {
         admin = msg.sender;
-        //addAuthority(msg.sender, )
+        addAuthority(msg.sender, 'QLD Health');
     }
 
     modifier checkAdmin() {
