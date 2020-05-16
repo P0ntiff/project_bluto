@@ -1,57 +1,37 @@
 import React from "react";
-import { Text, View, Button, TextInput, TouchableOpacity } from "react-native";
+import { Text, View, Button, TextInput, TouchableOpacity, Modal } from "react-native";
 
 class AuthorityView extends React.Component {
   state = { emailKey: null, 
             phoneKey: null, 
             stackId: null, 
-            text: "", 
-            myAddress: null };
+            myAddress: null,
+            emailAddr: "",
+            phone: "",
+            showModal: false };
 
-  submit = () => {
-    this.setValue(this.state.text);
+  submitContactDetails = () => {
+    this.submitDetailsToLedger(this.state.myAddress, this.state.emailAddr, this.state.phone);
+    this.setState( { showModal: false} )
   };
 
-  setValue = value => {
-    const { drizzle, drizzleState, styles } = this.props;
-    const contract = drizzle.contracts.MyStringStore;
+  submitDetailsToLedger = (addr, email, phone) => {
+    const { drizzle, drizzleState} =  this.props;
+    const contract = drizzle.contracts.AuthorityRegistry;
 
-    // let drizzle know we want to call the `set` method with `value`
-    const stackId = contract.methods["set"].cacheSend(value, {
-      from: drizzleState.accounts[0]
+    const stackId = contract.methods["setContactDetailsForAuthority"].cacheSend(
+      addr, phone, email, {from: drizzleState.accounts[0]
     });
 
     // save the `stackId` for later reference
     this.setState({ stackId });
   };
 
-  getTxStatus = () => {
-    // get the transaction states from the drizzle state
-    const { transactions, transactionStack } = this.props.drizzleState;
-
-    // get the transaction hash using our saved `stackId`
-    const txHash = transactionStack[this.state.stackId];
-
-    // if transaction hash does not exist, don't display anything
-    if (!txHash) return null;
-
-    // otherwise, return the transaction status
-    if (transactions[txHash] && transactions[txHash].status)
-      return `Txn ${transactions[txHash].status}`;
-
-    return null;
-  };
-
   displayAddress = () => {
-
     return <View style={this.props.styles.bodySection}>
             <Text style={this.props.styles.subHeading}> Authority address: </Text>
             <Text style={this.props.styles.bodyText}> {this.state.myAddress} </Text>
           </View>
-  }
-
-  setContactDetails = () => {
-    //test
   }
 
   displayContactDetails = () => {
@@ -63,24 +43,51 @@ class AuthorityView extends React.Component {
     if (!email) {
       //
     }
-    return <View style={this.props.styles.bodySection}>
-            <View style={{flexDirection : "row", justifyContent: "space-between"}}>
-              <View>
-                <Text style={this.props.styles.subHeading}> On-Ledger Email: </Text>
-                <Text style={this.props.styles.bodyText}> Email is: {email && email.value} </Text>
-                <Text style={this.props.styles.subHeading}> On-Ledger Phone: </Text>
-                <Text style={this.props.styles.bodyText}> Phone is: {phone && phone.value} </Text>
-              </View> 
-              <View style={{justifyContent : 'center'}}>
-                <TouchableOpacity onPress={this.setContactDetails} 
-                    style={[this.props.styles.buttonStyle, { backgroundColor : '#4B0082'}]}> 
-                  <Text style={this.props.styles.buttonText}>Update</Text>  
-                </TouchableOpacity>
-              </View>
-            </View>
+    return (
+      <View style={this.props.styles.bodySection}>
+        <View style={{flexDirection : "row", justifyContent: "space-between"}}>
+          <View>
+            <Text style={this.props.styles.subHeading}> On-Ledger Email: </Text>
+            <Text style={this.props.styles.bodyText}> Email is: {email && email.value} </Text>
+            <Text style={this.props.styles.subHeading}> On-Ledger Phone: </Text>
+            <Text style={this.props.styles.bodyText}> Phone is: {phone && phone.value} </Text>
+          </View> 
+          <View style={{justifyContent : 'center'}}>
+            <TouchableOpacity onPress={ () => { this.setState( {showModal:true} )}}
+                style={[this.props.styles.buttonStyle, { backgroundColor : '#4B0082'}]}> 
+              <Text style={this.props.styles.buttonText}>Update</Text>  
+            </TouchableOpacity>
           </View>
-  }
+        </View>
+      </View>
+    )};
 
+  displayModal = () => {
+    return (
+      <Modal transparent={true} visible={this.state.showModal}>
+        <View style={{backgroundColor:"#0f0f0f", flex: 1}}>
+          <View style={{backgroundColor:"#ffffff", margin: 50, padding: 40, borderRadius: 10, flex: 1}}>
+            <Text style={{fontSize: 30}}> Update Contact Details </Text>
+            <Text style={this.props.styles.subHeading}> On-Ledger Email: </Text>
+            <TextInput
+              style={{ height: 40, borderColor: "gray", borderWidth: 1 }}
+              onChangeText={emailAddr => this.setState({ emailAddr })}
+              value={this.state.emailAdr}
+              placeholder="Enter email address"
+            />
+            <Text style={this.props.styles.subHeading}> On-Ledger Phone: </Text>
+            <TextInput
+              style={{ height: 40, borderColor: "gray", borderWidth: 1 }}
+              onChangeText={phone => this.setState({ phone })}
+              value={this.state.phone}
+              placeholder="Enter phone number"
+            />
+            <Button title="Submit" onPress={this.submitContactDetails} />
+          </View>
+        </View>
+
+      </Modal>
+    )};
   
   componentDidMount() {
     const contract = this.props.drizzle.contracts.AuthorityRegistry;
@@ -101,13 +108,14 @@ class AuthorityView extends React.Component {
   render() {
     return (
       <View>
+        {this.displayModal()}
         <View style={this.props.styles.titleWrapper}>
           <Text style={[this.props.styles.title, { color : '#4B0082'}]}> Authority View </Text>
         </View>
         <View style={this.props.styles.bodyWrapper}>
           {this.displayAddress()}          
           {this.displayContactDetails()}
-          <Text>{this.getTxStatus()}</Text>
+  
         </View>
       </View>
     );
