@@ -7,10 +7,16 @@ import { name as appName } from "./app.json";
 import React from "react";
 import { Drizzle, generateStore } from "drizzle";
 import MyStringStore from "./build/contracts/MyStringStore.json";
+import AuthorityRegistry from "./build/contracts/AuthorityRegistry.json";
+import ResultFeed from "./build/contracts/ResultFeed.json";
 
 const options = {
-  contracts: [MyStringStore]
+  contracts: [MyStringStore, AuthorityRegistry, ResultFeed],
+  events: {
+    ResultFeed: ["PositiveResult"],
+  },
 };
+
 const drizzleStore = generateStore(options);
 const drizzle = new Drizzle(options, drizzleStore);
 
