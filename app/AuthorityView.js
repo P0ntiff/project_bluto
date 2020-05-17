@@ -30,7 +30,7 @@ class AuthorityView extends React.Component {
   displayAddress = () => {
     return <View style={this.props.styles.bodySection}>
             <Text style={this.props.styles.subHeading}> Authority address: </Text>
-            <Text style={this.props.styles.bodyText}> {this.state.myAddress} </Text>
+            <Text numberOfLines={1} style={this.props.styles.bodyText}> {this.state.myAddress} </Text>
           </View>
   }
 
@@ -45,12 +45,14 @@ class AuthorityView extends React.Component {
     }
     return (
       <View style={this.props.styles.bodySection}>
-        <View style={{flexDirection : "row", justifyContent: "space-between"}}>
+        <View style={{flexDirection : "row", justifyContent: "space-between", marginRight: 15}}>
           <View>
             <Text style={this.props.styles.subHeading}> On-Ledger Email: </Text>
-            <Text style={this.props.styles.bodyText}> Email is: {email && email.value} </Text>
+            <Text style={this.props.styles.bodyText}> {email && email.value} </Text>
+            <View style={{marginBottom: 5}}></View>
             <Text style={this.props.styles.subHeading}> On-Ledger Phone: </Text>
-            <Text style={this.props.styles.bodyText}> Phone is: {phone && phone.value} </Text>
+            <Text style={this.props.styles.bodyText}> {phone && phone.value} </Text>
+            <View style={{marginBottom: 5}}></View>
           </View> 
           <View style={{justifyContent : 'center'}}>
             <TouchableOpacity onPress={ () => { this.setState( {showModal:true} )}}
@@ -64,10 +66,10 @@ class AuthorityView extends React.Component {
 
   displayModal = () => {
     return (
-      <Modal transparent={true} visible={this.state.showModal}>
+      <Modal transparent={true} visible={this.state.showModal} onRequestClose={() => { this.setState( { showModal: false})}}>
         <View style={{backgroundColor:"#0f0f0f", flex: 1}}>
           <View style={{backgroundColor:"#ffffff", margin: 50, padding: 40, borderRadius: 10, flex: 1}}>
-            <Text style={{fontSize: 30}}> Update Contact Details </Text>
+            <Text style={[this.props.styles.title, {marginBottom: 20}]}> Update Contact Details </Text>
             <Text style={this.props.styles.subHeading}> On-Ledger Email: </Text>
             <TextInput
               style={{ height: 40, borderColor: "gray", borderWidth: 1 }}
@@ -75,6 +77,7 @@ class AuthorityView extends React.Component {
               value={this.state.emailAdr}
               placeholder="Enter email address"
             />
+            <View style={{marginBottom: 20}}></View>
             <Text style={this.props.styles.subHeading}> On-Ledger Phone: </Text>
             <TextInput
               style={{ height: 40, borderColor: "gray", borderWidth: 1 }}
@@ -82,7 +85,8 @@ class AuthorityView extends React.Component {
               value={this.state.phone}
               placeholder="Enter phone number"
             />
-            <Button title="Submit" onPress={this.submitContactDetails} />
+            <View style={{marginBottom: 20}}></View>
+            <Button title="Submit" color="#4B0082" onPress={this.submitContactDetails} />
           </View>
         </View>
 
