@@ -117,13 +117,16 @@ const styles = StyleSheet.create({
     //backgroundColor: 'rgba(52, 52, 52, 0.4)',
   },
   bodySection: {
-    height: 100,
+    marginBottom: 20,
+    marginLeft: 20,
+    marginRight: 20
   },
   subHeading: {
     fontWeight: 'bold',
+    marginBottom: 2,
   },
   bodyText: {
-    //
+    paddingLeft: 10,
   },
   buttonStyle: {
     height: 40,
