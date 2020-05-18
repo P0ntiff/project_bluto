@@ -100,13 +100,6 @@ contract AuthorityRegistry {
         authorities[auth].jurisdiction = jdictionName;
     }
 
-    function getResultFeedAddress(string memory jurisdiction)
-        public view returns (address rfAddress)
-    {
-        require(jurisdictions[jurisdiction].exists, "jurisdiction with that name does not exist");
-        return jurisdictions[jurisdiction].rfAddress;
-    }
-
     function setContactDetailsForAuthority(address authAddr, string memory phone, string memory email)
         public checkCredentials(authAddr)
     {
@@ -127,8 +120,24 @@ contract AuthorityRegistry {
         return authorities[authAddr].contactDetails.emailAddress;
     }
 
-    function getJurisdictionNames() public view returns(string[] memory) {
-        return jurisdictionNames;
+    function setJurisdictionForAuthority(address authAddr, string memory jdictionName)
+        public checkCredentials(authAddr)
+    {
+        require(jurisdictions[jdictionName].exists, "jurisdiction with that name does not exist");
+        authorities[authAddr].jurisdiction = jdictionName;
+    }
+
+    function getJurisdictionForAuthority(address authAddr)
+        public view returns (string memory jdictionName)
+    {
+        return authorities[authAddr].jurisdiction;
+    }
+
+    function getResultFeedAddress(string memory jurisdiction)
+        public view returns (address rfAddress)
+    {
+        require(jurisdictions[jurisdiction].exists, "jurisdiction with that name does not exist");
+        return jurisdictions[jurisdiction].rfAddress;
     }
 
 }

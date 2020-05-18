@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
     //backgroundColor: 'rgba(52, 52, 52, 0.4)',
   },
   bodySection: {
-    marginBottom: 20,
+    marginBottom: 15,
     marginLeft: 20,
     marginRight: 20
   },
@@ -129,8 +129,10 @@ const styles = StyleSheet.create({
     paddingLeft: 10,
   },
   buttonStyle: {
-    height: 40,
-    width: 100,
+    paddingTop: 10,
+    paddingBottom: 10,
+    paddingLeft: 20,
+    paddingRight: 20,
     justifyContent: 'center',
     borderRadius: 5,
   },
@@ -138,7 +140,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: 'white',
     fontWeight: 'bold',
-    fontSize: 16,
+    fontSize: 14,
   },
   bodySectionButtonRow: {
     flexDirection : "row", 
@@ -151,14 +153,35 @@ const styles = StyleSheet.create({
   listItem: {
     flex: 1,
     flexDirection: 'row',
-    width: 140,
     padding: 8,
-    backgroundColor: '#e8e8e8',
+    backgroundColor: '#f5f5f5',
     borderTopWidth: 0.5,
     borderBottomWidth: 0.5,
     borderLeftWidth: 0.5,
     borderRightWidth: 0.5,
     borderColor: '#000000'
+  },
+  modalBackground: {
+    backgroundColor:"#0f0f0f",
+    flex: 1
+  },
+  modalInnerView : {
+    backgroundColor:"#ffffff", 
+    margin: 50, 
+    padding: 40, 
+    borderRadius: 10, 
+    flex: 1},
+  modalTitle: {
+    fontWeight: 'bold',
+    fontSize: 20,
+    textAlign: 'center',
+    marginBottom: 20
+  },
+  modalForm: {
+    height: 40, 
+    borderColor: "gray", 
+    borderWidth: 1,
+    marginBottom: 20
   }
 
 });

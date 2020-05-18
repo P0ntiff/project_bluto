@@ -3,47 +3,43 @@ import { Text, View, Button, TextInput,
           TouchableOpacity, Modal, FlatList,
           AsyncStorage } from "react-native";
 
-
 const mockJurisdictionNames = [
   { id: 1, title: 'Brisbane' },
   { id: 2, title: 'Cairns' },
   { id: 3, title: 'Townsville' },
 ];
 
-
 class AuthorityView extends React.Component {
-  state = { emailKey : null, 
+  state = { stackId : null, 
+            emailKey : null, 
             phoneKey : null, 
-            stackId : null, 
+            jurisdictionKey : null,
             myAddress : null,
-            emailAddr : "",
-            phone : "",
+            newEmail : "",
+            newPhone : "",
+            newJurisdiction: "",
             showContactForm: false,
-            jurisdictionsKey : null,
-            jurisdictionNames : [],
+            showJurisdictionForm: false,
+            addedJurisdictions : [],
             currentJurisdiction : "",
           };
 
-  submitContactDetails = () => {
-    this.submitDetailsToLedger(this.state.myAddress, this.state.emailAddr, this.state.phone);
+  submitContactDetailsToLedger = () => {
+    const contract = this.props.drizzle.contracts.AuthorityRegistry;
+    const stackId = contract.methods.setContactDetailsForAuthority.cacheSend(
+                      this.state.myAddress, this.state.newPhone, this.state.newEmail, 
+                      {from: this.state.myAddress});
     this.setState( { showContactForm: false} )
+    this.setState( { stackId } );
   };
 
-  submitDetailsToLedger = (addr, email, phone) => {
-    const { drizzle, drizzleState} =  this.props;
-    const contract = drizzle.contracts.AuthorityRegistry;
-
-    const stackId = contract.methods["setContactDetailsForAuthority"].cacheSend(
-      addr, phone, email, {from: drizzleState.accounts[0]
-    });
-
-    // save the `stackId` for later reference
-    this.setState({ stackId });
-  };
-
-  generateJurisdiction = () => {
-    console.log('test');
-
+  submitNewJurisdictionToLedger = () => {
+    const contract = this.props.drizzle.contracts.AuthorityRegistry;
+    const stackId = contract.methods.addJurisdiction.cacheSend(
+                      this.state.newJurisdiction, this.state.myAddress, 
+                      {from: this.state.myAddress, gas: 1000000});
+    this.setState( { showJurisdictionForm: false} )
+    this.setState( { stackId } );
   };
 
   setCurrentJurisdiction = (title) => {
@@ -57,9 +53,15 @@ class AuthorityView extends React.Component {
           </View>
   }
 
+  displayCurrentJurisdiction = () => {
+    return <View style={this.props.styles.bodySection}>
+            <Text style={this.props.styles.subHeading}> Current Jurisdiction: </Text>
+            <Text numberOfLines={1} style={this.props.styles.bodyText}> {this.state.currentJurisdiction} </Text>
+          </View>
+  }
+
   displayContactDetails = () => {
     const { AuthorityRegistry } = this.props.drizzleState.contracts;
-
     const email = AuthorityRegistry.getContactEmailForAuthority[this.state.emailKey];
     const phone = AuthorityRegistry.getContactPhoneForAuthority[this.state.phoneKey];
 
@@ -72,7 +74,6 @@ class AuthorityView extends React.Component {
             <View style={{marginBottom: 5}}></View>
             <Text style={this.props.styles.subHeading}> On-Ledger Phone: </Text>
             <Text style={this.props.styles.bodyText}> {phone && phone.value} </Text>
-            <View style={{marginBottom: 5}}></View>
           </View> 
           <View style={{justifyContent : 'center'}}>
             <TouchableOpacity onPress={ () => { this.setState( {showContactForm : true} )}}
@@ -86,23 +87,10 @@ class AuthorityView extends React.Component {
     )
   };
 
-  displayListItem = (text, onSelect) => {
-    return (
-      <TouchableOpacity
-        onPress={() => onSelect(text)}
-        style={this.props.styles.listItem}
-      >
-        <Text style={this.props.styles.listText}>{text}</Text>
-      </TouchableOpacity>
-    );  
-  };
-
   displayJurisdictions = () => {
     const { AuthorityRegistry } = this.props.drizzleState.contracts;
 
-    //const jurisdictionList = AuthorityRegistry.getJurisdictionNames[this.state.jurisdictionsKey];
-    
-    // <FlatList data={}
+    //return <Text> {jurisdictionList && jurisdictionList.value} </Text>
 
     return (
       <View style={this.props.styles.bodySection}>
@@ -120,9 +108,9 @@ class AuthorityView extends React.Component {
               </View>
           </View>
           <View style={{justifyContent : 'center'}}>
-            <TouchableOpacity onPress={this.generateJurisdiction}
+            <TouchableOpacity onPress={ () => { this.setState( {showJurisdictionForm : true} )}}
                 style={[this.props.styles.buttonStyle, { backgroundColor : '#4B0082'}]}> 
-              <Text style={this.props.styles.buttonText}>Add</Text>  
+              <Text style={this.props.styles.buttonText}>Add Jurisdiction</Text>  
             </TouchableOpacity>
             <Text style={{textAlign: "center", justifyContent: "center"}}>{this.getTxStatus()}</Text>
           </View>
@@ -130,7 +118,6 @@ class AuthorityView extends React.Component {
       </View>
     )
   };
-
 
   getTxStatus = () => {
     // get the transaction states from the drizzle state
@@ -149,36 +136,63 @@ class AuthorityView extends React.Component {
     return null;
   };
   
-
-  displayModal = () => {
+  displayContactForm = () => {
     return (
       <Modal transparent={true} visible={this.state.showContactForm} onRequestClose={() => { this.setState( { showContactForm: false})}}>
-        <View style={{backgroundColor:"#0f0f0f", flex: 1}}>
-          <View style={{backgroundColor:"#ffffff", margin: 50, padding: 40, borderRadius: 10, flex: 1}}>
-            <Text style={[this.props.styles.title, {marginBottom: 20}]}> Update Contact Details </Text>
+        <View style={this.props.styles.modalBackground}>
+          <View style={this.props.styles.modalInnerView}>
+            <Text style={this.props.styles.modalTitle}> Update Contact Details </Text>
             <Text style={this.props.styles.subHeading}> On-Ledger Email: </Text>
             <TextInput
-              style={{ height: 40, borderColor: "gray", borderWidth: 1 }}
-              onChangeText={emailAddr => this.setState({ emailAddr })}
+              style={this.props.styles.modalForm}
+              onChangeText={newEmail => this.setState({ newEmail })}
               value={this.state.emailAdr}
               placeholder="Enter email address"
             />
-            <View style={{marginBottom: 20}}></View>
             <Text style={this.props.styles.subHeading}> On-Ledger Phone: </Text>
             <TextInput
-              style={{ height: 40, borderColor: "gray", borderWidth: 1 }}
-              onChangeText={phone => this.setState({ phone })}
-              value={this.state.phone}
+              style={this.props.styles.modalForm}
+              onChangeText={newPhone => this.setState({ newPhone })}
+              value={this.state.newPhone}
               placeholder="Enter phone number"
             />
-            <View style={{marginBottom: 20}}></View>
-            <Button title="Submit" color="#4B0082" onPress={this.submitContactDetails} />
+            <Button title="Submit" color="#4B0082" onPress={this.submitContactDetailsToLedger} />
           </View>
         </View>
 
       </Modal>
     )};
+
+  displayJurisdictionForm = () => {
+    return (
+      <Modal transparent={true} visible={this.state.showJurisdictionForm} onRequestClose={() => { this.setState( { showJurisdictionForm: false})}}>
+        <View style={this.props.styles.modalBackground}>
+          <View style={this.props.styles.modalInnerView}>
+            <Text style={this.props.styles.modalTitle}> Enter New Jurisdiction </Text>
+            <TextInput
+              style={this.props.styles.modalForm}
+              onChangeText={newJurisdiction => this.setState({ newJurisdiction })}
+              value={this.state.emailAdr}
+              placeholder="Enter jurisdiction"
+            />
+            <Button title="Submit" color="#4B0082" onPress={this.submitNewJurisdictionToLedger} />
+          </View>
+        </View>
+
+      </Modal>
+  )};
   
+  displayListItem = (text, onSelect) => {
+    return (
+      <TouchableOpacity
+        onPress={() => onSelect(text)}
+        style={this.props.styles.listItem}
+      >
+        <Text style={this.props.styles.listText}>{text}</Text>
+      </TouchableOpacity>
+    );  
+  };
+
   componentDidMount() {
     const contract = this.props.drizzle.contracts.AuthorityRegistry;
 
@@ -193,15 +207,17 @@ class AuthorityView extends React.Component {
     const phoneKey = contract.methods.getContactPhoneForAuthority.cacheCall(myAddress);
     this.setState({ phoneKey });
 
-    const jurisdictionsKey = contract.methods.getJurisdictionNames.cacheCall();
-    this.setState( { jurisdictionsKey });
+    const jurisdictionKey = contract.methods.getJurisdictionForAuthority.cacheCall(myAddress);
+    this.setState( { jurisdictionKey });
+
   }
 
 
   render() {
     return (
       <View>
-        {this.displayModal()}
+        {this.displayContactForm()}
+        {this.displayJurisdictionForm()}
         <View style={this.props.styles.titleWrapper}>
           <Text style={[this.props.styles.title, { color : '#4B0082'}]}> Authority View </Text>
         </View>
@@ -209,7 +225,7 @@ class AuthorityView extends React.Component {
           {this.displayAddress()}          
           {this.displayContactDetails()}
           {this.displayJurisdictions()}
-  
+          {this.displayCurrentJurisdiction()}
         </View>
       </View>
     );
