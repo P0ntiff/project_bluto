@@ -139,6 +139,26 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
     fontSize: 16,
+  },
+  bodySectionButtonRow: {
+    flexDirection : "row", 
+    justifyContent: "space-between", 
+    marginRight: 15
+  },
+  list: {
+    paddingLeft: 10,
+  },
+  listItem: {
+    flex: 1,
+    flexDirection: 'row',
+    width: 140,
+    padding: 8,
+    backgroundColor: '#e8e8e8',
+    borderTopWidth: 0.5,
+    borderBottomWidth: 0.5,
+    borderLeftWidth: 0.5,
+    borderRightWidth: 0.5,
+    borderColor: '#000000'
   }
 
 });

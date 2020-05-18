@@ -1,4 +1,7 @@
 pragma solidity ^0.5.0;
+pragma experimental ABIEncoderV2;
+
+import './ResultFeed.sol';
 
 contract AuthorityRegistry {
 
@@ -79,12 +82,17 @@ contract AuthorityRegistry {
         // TODO remove from other lists
     }
 
-    function addJurisdiction(string memory jdictionName, address rfAddress, address auth)
+    function addJurisdiction(string memory jdictionName, address auth)
         public checkCredentials(auth)
     {
         // check there's no jurisdiction clash
         require(!jurisdictions[jdictionName].exists, "this jurisdiction already exists");
-        // add new jurisdiction
+
+        // create new result feed for the jurisdiction
+        ResultFeed rf = new ResultFeed();
+        address rfAddress = address(rf);
+        rf.setJurisdiction(jdictionName);
+        // add new jurisdiction to list of jurisidctions
         jurisdictionNames.push(jdictionName);
         jurisdictions[jdictionName] = Jurisdiction(rfAddress, auth, true);
 
@@ -117,6 +125,10 @@ contract AuthorityRegistry {
     {
         require(authorities[authAddr].exists, "requested authority does not exist");
         return authorities[authAddr].contactDetails.emailAddress;
+    }
+
+    function getJurisdictionNames() public view returns(string[] memory) {
+        return jurisdictionNames;
     }
 
 }
