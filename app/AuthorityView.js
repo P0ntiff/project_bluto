@@ -2,7 +2,7 @@ import React from "react";
 import { Text, View, Button, TextInput, 
           TouchableOpacity, Modal, FlatList,
           AsyncStorage } from "react-native";
-
+          
 const mockJurisdictionNames = [
   { id: 1, title: 'Brisbane' },
   { id: 2, title: 'Cairns' },
@@ -34,17 +34,47 @@ class AuthorityView extends React.Component {
   };
 
   submitNewJurisdictionToLedger = () => {
+    //setup object to cache locally
+    const id = (this.state.addedJurisdictions.length + 1).toString();
+    const jdiction = {id: id, title: this.state.newJurisdiction};
+    // add on ledger
     const contract = this.props.drizzle.contracts.AuthorityRegistry;
     const stackId = contract.methods.addJurisdiction.cacheSend(
                       this.state.newJurisdiction, this.state.myAddress, 
                       {from: this.state.myAddress, gas: 1000000});
-    this.setState( { showJurisdictionForm: false} )
+    //update state
+    this.setState( { addedJurisdictions : this.state.addedJurisdictions.concat(jdiction) }, this._saveToLocalCache);
+    this.setCurrentJurisdiction(this.state.newJurisdiction);
+    this.setState( { showJurisdictionForm: false} );
     this.setState( { stackId } );
   };
 
   setCurrentJurisdiction = (title) => {
     this.setState( { currentJurisdiction : title });
   };
+
+  _saveToLocalCache = async () => {
+    try {
+      await AsyncStorage.setItem('addedJurisdictions', JSON.stringify(this.state.addedJurisdictions));
+      
+    } catch (error) {
+      // error saving data
+      alert(error.message);
+    }
+  };
+
+  _readFromLocalCache = async () => {
+    try {
+      const value = await AsyncStorage.getItem('addedJurisdictions');
+      if (value !== null) {
+        this.setState ( { addedJurisdictions : JSON.parse(value) } );
+        this.setState ( {currentJurisdiction : value[0].title} );
+      }
+    } catch (error) {
+      // error saving data
+      alert(error.message);
+    }
+  }
 
   displayAddress = () => {
     return <View style={this.props.styles.bodySection}>
@@ -90,20 +120,31 @@ class AuthorityView extends React.Component {
   displayJurisdictions = () => {
     const { AuthorityRegistry } = this.props.drizzleState.contracts;
 
-    //return <Text> {jurisdictionList && jurisdictionList.value} </Text>
-
+    // if (this.state.addedJurisdictions.length == 0) {
+    //   return ( 
+    //     <View style={this.props.styles.bodySection}>
+    //         <View style={this.props.styles.bodySectionButtonRow}>
+    //           <View>
+    //             <Text style={this.props.styles.subHeading}> Jurisdiction List: </Text>
+    //             <Text style={this.props.styles.bodyText}> No jurisdictions added.</Text> 
+    //           </View>
+    //         </View>
+    //     </View>
+    //   );
+    // }
     return (
       <View style={this.props.styles.bodySection}>
         <View style={this.props.styles.bodySectionButtonRow}>
           <View>
             <Text style={this.props.styles.subHeading}> Jurisdiction List: </Text>
-              <View style={this.props.styles.list}>
+              <View style={this.props.styles.listBox}>
                 <FlatList
-                  keyExtractor={(item) => item.id}
-                  data={mockJurisdictionNames}
+                  data={this.state.addedJurisdictions}
                   renderItem={({ item }) => (
                     this.displayListItem(item.title, this.setCurrentJurisdiction)
-                  )}>
+                  )}
+                  keyExtractor={(item, index) => item.id}
+                  >
                 </FlatList>
               </View>
           </View>
@@ -111,6 +152,10 @@ class AuthorityView extends React.Component {
             <TouchableOpacity onPress={ () => { this.setState( {showJurisdictionForm : true} )}}
                 style={[this.props.styles.buttonStyle, { backgroundColor : '#4B0082'}]}> 
               <Text style={this.props.styles.buttonText}>Add Jurisdiction</Text>  
+            </TouchableOpacity>
+            <TouchableOpacity onPress={ () => { this.setState( {addedJurisdictions : []}, this._saveToLocalCache)}}
+                style={[this.props.styles.buttonStyle, { marginTop: 5, backgroundColor : '#4B0082'}]}> 
+              <Text style={this.props.styles.buttonText}>Clear</Text>  
             </TouchableOpacity>
             <Text style={{textAlign: "center", justifyContent: "center"}}>{this.getTxStatus()}</Text>
           </View>
@@ -194,10 +239,12 @@ class AuthorityView extends React.Component {
   };
 
   componentDidMount() {
+    // get local state cache
+    this._readFromLocalCache();
+
     const contract = this.props.drizzle.contracts.AuthorityRegistry;
 
-    //get the address from drizzleState
-    //authority modelled as address 0
+    //authority is modelled as address 0
     const myAddress = this.props.drizzleState.accounts[0];
     this.setState({ myAddress });
 
@@ -211,7 +258,6 @@ class AuthorityView extends React.Component {
     this.setState( { jurisdictionKey });
 
   }
-
 
   render() {
     return (

@@ -147,7 +147,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between", 
     marginRight: 15
   },
-  list: {
+  listBox: {
     paddingLeft: 10,
   },
   listItem: {
