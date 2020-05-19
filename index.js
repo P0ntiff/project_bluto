@@ -13,7 +13,7 @@ import ResultFeed from "./build/contracts/ResultFeed.json";
 const options = {
   contracts: [MyStringStore, AuthorityRegistry, ResultFeed],
   events: {
-    ResultFeed: ["PositiveResult"],
+    ResultFeed: ["ExposureNotification"],
   },
 };
 

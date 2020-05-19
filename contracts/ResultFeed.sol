@@ -6,7 +6,7 @@ contract ResultFeed {
     string[] public positiveEIDList;
     uint feedLength;
 
-    event PositiveResult(string eid, string jurisdiction);
+    event ExposureNotification(string eid, string jurisdiction);
 
     constructor() public {
         // needs to be called by the authority in charge of the result feed
@@ -20,10 +20,10 @@ contract ResultFeed {
         _;
     }
 
-    function publishPositiveEncounter(string memory eid, string memory jdictionName)
+    function publishExposureNotification(string memory eid, string memory jdictionName)
         public checkAdmin()
     {
-        emit PositiveResult(eid, jdictionName);
+        emit ExposureNotification(eid, jdictionName);
         positiveEIDList.push(eid);
         feedLength++;
     }

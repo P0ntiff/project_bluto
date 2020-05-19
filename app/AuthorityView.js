@@ -3,20 +3,28 @@ import { Text, View, Button, TextInput,
           TouchableOpacity, Modal, FlatList,
           AsyncStorage } from "react-native";
 
-const mockJurisdictionNames = [
-  { id: 1, title: 'Brisbane' },
-  { id: 2, title: 'Cairns' },
-  { id: 3, title: 'Townsville' },
-];
+// const mockJurisdictionNames = [
+//   { id: '1', title: 'Brisbane' },
+//   { id: '2', title: 'Cairns' },
+//   { id: '3', title: 'Townsville' },
+// ];
 
 const mockInboxMessage = {
     name: "Anonymous",
     pdf: "Positive Result.pdf",
-    eidList: [{id: 1, title: '31d152228b'},
-              {id: 2, title: '438ab85cdf'},
-              {id: 3, title: '3e9aa49aec'},
-              {id: 4, title: 'e789b60281'}
+    eidListDisplay: [
+      {id: '1', title: '31d152228b'},
+      {id: '2', title: '438ab85cdf'},
+      {id: '3', title: '3e9aa49aec'},
+      {id: '4', title: 'e789b60281'},
+    ],
+    eidListPublish: [
+        '31d152228b',
+        '438ab85cdf',
+        '3e9aa49aec',
+        'e789b60281',
     ]
+    
 }
 
 
@@ -72,11 +80,20 @@ class AuthorityView extends React.Component {
   };
 
   publishNewEncounterList = () => {
-    // get the jurisdiction
+    // get the current jurisdiction
     const { AuthorityRegistry } = this.props.drizzleState.contracts;
     const currentJurisdiction = AuthorityRegistry.getCurrentJurisdiction[this.state.jurisdictionKey];
-    
+    // get EID list from inbox
+    const eidList = this.state.inboxMessage.eidListPublish;
+    console.log(eidList[0]);
+    console.log(currentJurisdiction);
+    // send to result feed (publish)
+    const rfContract = this.props.drizzle.contracts.ResultFeed;
+    const stackId = rfContract.methods.publishExposureNotification.cacheSend(
+                      eidList[0], currentJurisdiction.value, 
+                      {from: this.state.myAddress, gas: 1000000});
     this.setState( { showReviewMessage: false} );
+    this.setState( { stackId } );
 
   };
 
@@ -288,7 +305,7 @@ class AuthorityView extends React.Component {
             <View style={this.props.styles.listBox}>
               {this.state.inboxMessage ? (
                 <FlatList
-                  data={this.state.inboxMessage.eidList}
+                  data={this.state.inboxMessage.eidListDisplay}
                   renderItem={({ item }) => (
                     this.displayListItem(item.title, null, this.props.styles.modalListItem)
                   )}
