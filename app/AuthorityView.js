@@ -85,15 +85,19 @@ class AuthorityView extends React.Component {
     const currentJurisdiction = AuthorityRegistry.getCurrentJurisdiction[this.state.jurisdictionKey];
     // get EID list from inbox
     const eidList = this.state.inboxMessage.eidListPublish;
-    console.log(eidList[0]);
-    console.log(currentJurisdiction);
+    // console.log(eidList[0]);
+    // console.log(currentJurisdiction);
     // send to result feed (publish)
     const rfContract = this.props.drizzle.contracts.ResultFeed;
-    const stackId = rfContract.methods.publishExposureNotification.cacheSend(
-                      eidList[0], currentJurisdiction.value, 
-                      {from: this.state.myAddress, gas: 1000000});
+    // run as a batch of commands
+    eidList.map( item => {
+      // console.log(item);
+      const stackId = rfContract.methods.publishExposureNotification.cacheSend(
+        item, currentJurisdiction.value, 
+        {from: this.state.myAddress, gas: 1000000});
+      this.setState( { stackId } );
+    });
     this.setState( { showReviewMessage: false} );
-    this.setState( { stackId } );
 
   };
 
