@@ -97,6 +97,8 @@ const styles = StyleSheet.create({
   },
   floatingButton: {
     flex: 1,
+    // flexDirection: "row",
+    // justifyContent: "flex-end",
     bottom: 35,
     position: "absolute",
     padding: 10,
