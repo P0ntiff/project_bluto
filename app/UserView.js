@@ -226,6 +226,18 @@ class UserView extends React.Component {
       </Modal>
   )};
 
+  displayExposureStatus = () => {
+    const { ResultFeed } = this.props.drizzleState.contracts;
+    // do something with events (another function?)
+    
+    return <View style={this.props.styles.bodySection}>
+            <Text style={this.props.styles.subHeading}> Exposure Status: </Text>
+            <View style={this.props.styles.listBox}>
+              <Text style={[this.props.styles.title, { color : '#008000', textAlign: 'left'}]}> Safe </Text>
+            </View>
+          </View>
+  };
+
   displayEncounterDetails = () => {
     const encounter = this.state.encounterInView;
     return (
@@ -257,7 +269,7 @@ class UserView extends React.Component {
 
   displayEncounters = () => {
     return (
-      <View style={this.props.styles.bodySection}>
+      <View style={[this.props.styles.bodySection, { marginBottom : 5 }]}>
         <Text style={this.props.styles.subHeading}> Recent Encounters: </Text>
         <View style={this.props.styles.bodySectionButtonRow}>
           <View>
@@ -368,6 +380,7 @@ class UserView extends React.Component {
           {this.displayLocalAuthority()}
           {this.displayContactDetails()}
           {this.displayEncounters()}
+          {this.displayExposureStatus()}
         </View>
       </View>
     );
