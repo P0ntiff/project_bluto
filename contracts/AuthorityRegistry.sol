@@ -9,7 +9,7 @@ contract AuthorityRegistry {
     mapping (address => Authority) authorities;
     string[] public authorityNames;
     address[] public authorityAddresses;
-    //each jurisdiction address is a contract address of a ResultFeed
+    //each jurisdiction address
     mapping (string => Jurisdiction) jurisdictions;
     string[] public jurisdictionNames;
 
@@ -28,7 +28,7 @@ contract AuthorityRegistry {
     }
 
     struct Jurisdiction {
-        address rfAddress;
+        string jdictionName;
         address authority;
         bool exists;
     }
@@ -70,7 +70,6 @@ contract AuthorityRegistry {
         authorityNames.push(authName);
         authorityAddresses.push(authAddr);
         // see addJurisdiction() below
-
         // see setContactDetailsForAuthority() below as well
     }
 
@@ -88,15 +87,11 @@ contract AuthorityRegistry {
         // check there's no jurisdiction clash
         require(!jurisdictions[jdictionName].exists, "this jurisdiction already exists");
 
-        // create new result feed for the jurisdiction
-        ResultFeed rf = new ResultFeed();
-        address rfAddress = address(rf);
-        rf.setJurisdiction(jdictionName);
-        // add new jurisdiction to list of jurisidctions
+        // add new jurisdiction to list of jurisdictions
         jurisdictionNames.push(jdictionName);
-        jurisdictions[jdictionName] = Jurisdiction(rfAddress, auth, true);
+        jurisdictions[jdictionName] = Jurisdiction(jdictionName, auth, true);
 
-        // associate under Authority object
+        // associate under Authority
         authorities[auth].currentJurisdiction = jdictionName;
     }
 
@@ -120,27 +115,17 @@ contract AuthorityRegistry {
         return authorities[authAddr].contactDetails.emailAddress;
     }
 
-    function setJurisdictionForAuthority(address authAddr, string memory jdictionName)
+    function setCurrentJurisdiction(address authAddr, string memory jdictionName)
         public checkCredentials(authAddr)
     {
         require(jurisdictions[jdictionName].exists, "jurisdiction with that name does not exist");
         authorities[authAddr].currentJurisdiction = jdictionName;
     }
 
-    function getJurisdictionForAuthority(address authAddr)
+    function getCurrentJurisdiction(address authAddr)
         public view returns (string memory jdictionName)
     {
         return authorities[authAddr].currentJurisdiction;
-    }
-
-    function getResultFeedForAuthority(address authAddr)
-        public view returns (address rfAddress)
-
-    {
-        string memory jdictionName = authorities[authAddr].currentJurisdiction;
-        //require(jurisdictions[jdictionName].exists, "jurisdiction with that name does not exist");
-
-        return jurisdictions[jdictionName].rfAddress;
     }
 
 }

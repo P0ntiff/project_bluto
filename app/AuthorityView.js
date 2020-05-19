@@ -9,18 +9,32 @@ const mockJurisdictionNames = [
   { id: 3, title: 'Townsville' },
 ];
 
+const mockInboxMessage = {
+    name: "Anonymous",
+    pdf: "Positive Result.pdf",
+    eidList: [{id: 1, title: '31d152228b'},
+              {id: 2, title: '438ab85cdf'},
+              {id: 3, title: '3e9aa49aec'},
+              {id: 4, title: 'e789b60281'}
+    ]
+}
+
+
 class AuthorityView extends React.Component {
   state = { stackId : null, 
             emailKey : null, 
             phoneKey : null, 
             jurisdictionKey : null,
-            rfAddressKey : null,
+            lastPositiveEidKey : null,
             myAddress : null,
             newEmail : "",
             newPhone : "",
             newJurisdiction: "",
             showContactForm: false,
             showJurisdictionForm: false,
+            showReviewMessage: false,
+            messageToReview: true,
+            inboxMessage: null,
             addedJurisdictions : [],
             // currentJurisdiction: "",
           };
@@ -35,27 +49,35 @@ class AuthorityView extends React.Component {
   };
 
   submitNewJurisdictionToLedger = () => {
-    //setup object to cache locally
-    const id = (this.state.addedJurisdictions.length + 1).toString();
-    const jdiction = {id: id, title: this.state.newJurisdiction};
-    // add on ledger
-    const contract = this.props.drizzle.contracts.AuthorityRegistry;
-    const stackId = contract.methods.addJurisdiction.cacheSend(
+    // submit to AuthorityRegistry
+    const authRegContract = this.props.drizzle.contracts.AuthorityRegistry;
+    const stackId = authRegContract.methods.addJurisdiction.cacheSend(
                       this.state.newJurisdiction, this.state.myAddress, 
                       {from: this.state.myAddress, gas: 1000000});
-    //update state
+    // setup object to cache locally
+    const id = (this.state.addedJurisdictions.length + 1).toString();
+    const jdiction = {id: id, title: this.state.newJurisdiction};
+    // cache and update local state
     this.setState( { addedJurisdictions : this.state.addedJurisdictions.concat(jdiction) }, this._saveToLocalCache);
     this.setState( { showJurisdictionForm: false} );
     this.setState( { stackId } );
   };
 
   submitCurrentJurisdictionToLedger = (title) => {
-    const contract = this.props.drizzle.contracts.AuthorityRegistry;
-    const stackId = contract.methods.setJurisdictionForAuthority.cacheSend(
-      this.state.myAddress, title, 
-      {from: this.state.myAddress});
-    // this.setState( { currentJurisdiction: title })
+    const authRegContract = this.props.drizzle.contracts.AuthorityRegistry;
+    const stackId = authRegContract.methods.setCurrentJurisdiction.cacheSend(
+                      this.state.myAddress, title, 
+                      {from: this.state.myAddress});
     this.setState( { stackId } );
+  };
+
+  publishNewEncounterList = () => {
+    // get the jurisdiction
+    const { AuthorityRegistry } = this.props.drizzleState.contracts;
+    const currentJurisdiction = AuthorityRegistry.getCurrentJurisdiction[this.state.jurisdictionKey];
+    
+    this.setState( { showReviewMessage: false} );
+
   };
 
   _saveToLocalCache = async () => {
@@ -70,9 +92,17 @@ class AuthorityView extends React.Component {
 
   _readFromLocalCache = async () => {
     try {
-      const value = await AsyncStorage.getItem('addedJurisdictions');
-      if (value !== null) {
-        this.setState ( { addedJurisdictions : JSON.parse(value) } );
+      const addedList = await AsyncStorage.getItem('addedJurisdictions');
+      if (addedList !== null) {
+        this.setState ( { addedJurisdictions : JSON.parse(addedList) } );
+      }
+      //const newMessage = await AsyncStorage.getItem('newMessage');
+      const newMessage = mockInboxMessage;
+      if (newMessage !== null) {
+        //this.setState ( { newMessage : JSON.parse(newMessage)})
+        this.setState ( { inboxMessage : newMessage} )
+        this.setState ( { messageToReview : true } )
+
       }
     } catch (error) {
       // error saving data
@@ -114,73 +144,67 @@ class AuthorityView extends React.Component {
     )
   };
 
-  displayResultFeedAddress = () => {
-    const { AuthorityRegistry } = this.props.drizzleState.contracts;
-    const currentJurisdiction = AuthorityRegistry.getJurisdictionForAuthority[this.state.jurisdictionKey];
-    const currentRfAddress = AuthorityRegistry.getResultFeedForAuthority[this.state.rfAddressKey];
-
-    return <View style={this.props.styles.bodySection}>
-            <Text style={this.props.styles.subHeading}> Result Feed Address for {currentJurisdiction && currentJurisdiction.value}: </Text>
-            <Text numberOfLines={1} style={this.props.styles.bodyText}> {currentRfAddress && currentRfAddress.value} </Text>
-          </View>
-    
-  };
-
-  displayResultFeedInfo = () => {
-    const { AuthorityRegistry } = this.props.drizzleState.contracts;
-    const currentRfAddress = AuthorityRegistry.getResultFeedForAuthority[this.state.rfAddressKey];
-
-    const rfInstance = AuthorityRegistry.at(currentRfAddress);
-    const jdictionName = rfInstance.jurisdiction.call();
-
-    return <View style={this.props.styles.bodySection}>
-            <Text style={this.props.styles.subHeading}> Result Feed Info: </Text>
-            <Text numberOfLines={1} style={this.props.styles.bodyText}> {jdictionName} </Text>
-          </View>
-    
-  };
-
   displayJurisdictions = () => {
-    // if (this.state.addedJurisdictions.length == 0) {
-    //   return ( 
-    //     <View style={this.props.styles.bodySection}>
-    //         <View style={this.props.styles.bodySectionButtonRow}>
-    //           <View>
-    //             <Text style={this.props.styles.subHeading}> Jurisdiction List: </Text>
-    //             <Text style={this.props.styles.bodyText}> No jurisdictions added.</Text> 
-    //           </View>
-    //         </View>
-    //     </View>
-    //   );
-    // }
     return (
       <View style={this.props.styles.bodySection}>
+        <Text style={this.props.styles.subHeading}> Jurisdiction List: </Text>
         <View style={this.props.styles.bodySectionButtonRow}>
           <View>
-            <Text style={this.props.styles.subHeading}> Jurisdiction List: </Text>
-              <View style={this.props.styles.listBox}>
-                <FlatList
-                  data={this.state.addedJurisdictions}
-                  renderItem={({ item }) => (
-                    this.displayListItem(item.title, this.submitCurrentJurisdictionToLedger)
-                  )}
-                  keyExtractor={(item, index) => item.id}
-                  >
-                </FlatList>
-              </View>
+            <View style={this.props.styles.listBox}>
+              <FlatList
+                data={this.state.addedJurisdictions}
+                renderItem={({ item }) => (
+                  this.displayListItem(item.title, this.submitCurrentJurisdictionToLedger, this.props.styles.listItem)
+                )}
+                keyExtractor={(item, index) => item.id}
+                >
+              </FlatList>
+            </View>
           </View>
           <View style={{justifyContent : 'center'}}>
             <TouchableOpacity onPress={ () => { this.setState( {showJurisdictionForm : true} )}}
                 style={[this.props.styles.buttonStyle, { backgroundColor : '#4B0082'}]}> 
               <Text style={this.props.styles.buttonText}>Add Jurisdiction</Text>  
             </TouchableOpacity>
-            <TouchableOpacity onPress={ () => { this.setState( {addedJurisdictions : []}, this._saveToLocalCache)}}
-                style={[this.props.styles.buttonStyle, { marginTop: 5, backgroundColor : '#4B0082'}]}> 
-              <Text style={this.props.styles.buttonText}>Clear</Text>  
-            </TouchableOpacity>
+            {this.state.addedJurisdictions.length != 0 ? (
+              <TouchableOpacity onPress={ () => { this.setState( {addedJurisdictions : []}, this._saveToLocalCache)}}
+                  style={[this.props.styles.buttonStyle, { marginTop: 5, backgroundColor : '#4B0082'}]}> 
+                <Text style={this.props.styles.buttonText}>Clear</Text>  
+              </TouchableOpacity>
+            ) : (
+                 null 
+            )}
             <Text style={{textAlign: "center", justifyContent: "center"}}>{this.getTxStatus()}</Text>
           </View>
         </View>
+      </View>
+    )
+  };
+
+  displayInbox = () => {
+    const { AuthorityRegistry } = this.props.drizzleState.contracts;
+    const currentJurisdiction = AuthorityRegistry.getCurrentJurisdiction[this.state.jurisdictionKey];
+
+    return (
+      <View style={this.props.styles.bodySection}>
+        <Text style={this.props.styles.subHeading}> Inbox for {currentJurisdiction && currentJurisdiction.value}: </Text>
+        {this.state.messageToReview ? (
+          <View style={this.props.styles.bodySectionButtonRow}>
+            <View style={this.props.styles.listBox}>
+              <View style={[this.props.styles.listItem, { width: 140 }]}> 
+                <Text style={this.props.styles.listText}>From: {this.state.inboxMessage ? this.state.inboxMessage.name : null}</Text>
+              </View>
+            </View>
+            <View style={{justifyContent : 'center'}}>
+              <TouchableOpacity onPress={ () => { this.setState( { showReviewMessage : true} )}}
+                    style={[this.props.styles.buttonStyle, { backgroundColor : '#4B0082'}]}> 
+                  <Text style={this.props.styles.buttonText}>Review Message</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        ) : (
+          <Text style={this.props.styles.bodyText}>No new messages.</Text>
+        )}
       </View>
     )
   };
@@ -247,12 +271,47 @@ class AuthorityView extends React.Component {
 
       </Modal>
   )};
+
+  displayReviewMessage = () => {
+    return (
+      <Modal transparent={true} visible={this.state.showReviewMessage} onRequestClose={() => { this.setState( { showReviewMessage: false})}}>
+        <View style={this.props.styles.modalBackground}>
+          <View style={this.props.styles.modalInnerView}>
+            <Text style={this.props.styles.modalTitle}> Review Message </Text>
+            <Text style={this.props.styles.subHeading}> From:  </Text>
+            <Text style={this.props.styles.bodyText}> {this.state.inboxMessage ? this.state.inboxMessage.name : null} </Text>
+            <View style={{marginBottom: 15}}></View>
+            <Text style={this.props.styles.subHeading}> PDF Attachment:  </Text>
+            <Text style={this.props.styles.bodyText}> {this.state.inboxMessage ? this.state.inboxMessage.pdf : null} </Text>
+            <View style={{marginBottom: 15}}></View>
+            <Text style={this.props.styles.subHeading}> EID List:  </Text>
+            <View style={this.props.styles.listBox}>
+              {this.state.inboxMessage ? (
+                <FlatList
+                  data={this.state.inboxMessage.eidList}
+                  renderItem={({ item }) => (
+                    this.displayListItem(item.title, null, this.props.styles.modalListItem)
+                  )}
+                  keyExtractor={(item, index) => item.id}
+                  >
+                </FlatList>
+              ) : ( 
+                null 
+              )}
+            </View>
+            <View style={{marginBottom: 30}}></View>
+            <Button title="Publish" color="#4B0082" onPress={this.publishNewEncounterList} />
+          </View>
+        </View>
+
+      </Modal>
+  )};
   
-  displayListItem = (text, onSelect) => {
+  displayListItem = (text, onSelect, itemStyle) => {
     return (
       <TouchableOpacity
         onPress={() => onSelect(text)}
-        style={this.props.styles.listItem}
+        style={itemStyle}
       >
         <Text style={this.props.styles.listText}>{text}</Text>
       </TouchableOpacity>
@@ -263,23 +322,25 @@ class AuthorityView extends React.Component {
     // get local state cache
     this._readFromLocalCache();
 
-    const contract = this.props.drizzle.contracts.AuthorityRegistry;
+    const authRegContract = this.props.drizzle.contracts.AuthorityRegistry;
+    const rfContract = this.props.drizzle.contracts.ResultFeed;
 
-    //authority is modelled as address 0
-    const myAddress = this.props.drizzleState.accounts[0];
+    // authority registry on-chain state
+    const myAddress = this.props.drizzleState.accounts[0];    //authority is modelled as address 0
     this.setState({ myAddress });
 
-    const emailKey = contract.methods.getContactEmailForAuthority.cacheCall(myAddress);
+    const emailKey = authRegContract.methods.getContactEmailForAuthority.cacheCall(myAddress);
     this.setState({ emailKey });
 
-    const phoneKey = contract.methods.getContactPhoneForAuthority.cacheCall(myAddress);
+    const phoneKey = authRegContract.methods.getContactPhoneForAuthority.cacheCall(myAddress);
     this.setState({ phoneKey });
 
-    const jurisdictionKey = contract.methods.getJurisdictionForAuthority.cacheCall(myAddress);
+    const jurisdictionKey = authRegContract.methods.getCurrentJurisdiction.cacheCall(myAddress);
     this.setState({ jurisdictionKey });
 
-    const rfAddressKey = contract.methods.getResultFeedForAuthority.cacheCall(myAddress);
-    this.setState( { rfAddressKey });    
+    // result feed on-chain state
+    const lastPositiveEidKey = rfContract.methods.getLastPositiveEID.cacheCall();
+    this.setState( { lastPositiveEidKey });    
 
   }
 
@@ -288,6 +349,7 @@ class AuthorityView extends React.Component {
       <View>
         {this.displayContactForm()}
         {this.displayJurisdictionForm()}
+        {this.displayReviewMessage()}
         <View style={this.props.styles.titleWrapper}>
           <Text style={[this.props.styles.title, { color : '#4B0082'}]}> Authority View </Text>
         </View>
@@ -295,8 +357,7 @@ class AuthorityView extends React.Component {
           {this.displayAddress()}          
           {this.displayContactDetails()}
           {this.displayJurisdictions()}
-          {this.displayResultFeedAddress()}
-          {this.displayResultFeedInfo()}
+          {this.displayInbox()}
         </View>
       </View>
     );

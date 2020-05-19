@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
     //backgroundColor: 'rgba(52, 52, 52, 0.4)',
   },
   bodySection: {
-    marginBottom: 15,
+    marginBottom: 25,
     marginLeft: 20,
     marginRight: 20
   },
@@ -143,23 +143,27 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   bodySectionButtonRow: {
+    marginTop: 5,
     flexDirection : "row", 
     justifyContent: "space-between", 
-    marginRight: 15
   },
   listBox: {
-    paddingLeft: 10,
+    marginLeft: 10,
   },
   listItem: {
     flex: 1,
     flexDirection: 'row',
     padding: 8,
+    width: 120,
     backgroundColor: '#f5f5f5',
     borderTopWidth: 0.5,
     borderBottomWidth: 0.5,
     borderLeftWidth: 0.5,
-    borderRightWidth: 0.5,
+    borderRightWidth: 0.8,
     borderColor: '#000000'
+  },
+  listText: {
+    paddingLeft: 5,
   },
   modalBackground: {
     backgroundColor:"#0f0f0f",
@@ -182,6 +186,18 @@ const styles = StyleSheet.create({
     borderColor: "gray", 
     borderWidth: 1,
     marginBottom: 20
-  }
+  },
+  modalListItem: {
+    flex: 1,
+    flexDirection: 'row',
+    padding: 8,
+    width: 150,
+    backgroundColor: '#f5f5f5',
+    borderTopWidth: 0.5,
+    borderBottomWidth: 0.5,
+    borderLeftWidth: 0.5,
+    borderRightWidth: 0.8,
+    borderColor: '#000000'
+  },
 
 });

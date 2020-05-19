@@ -1,18 +1,17 @@
 pragma solidity ^0.5.0;
 pragma experimental ABIEncoderV2;
 
-
 contract ResultFeed {
     address public authorityAdmin;
-    string public jurisdiction;
     string[] public positiveEIDList;
-
+    uint feedLength;
 
     event PositiveResult(string eid, string jurisdiction);
 
     constructor() public {
         // needs to be called by the authority in charge of the result feed
         authorityAdmin = msg.sender;
+        feedLength = 0;
     }
 
     modifier checkAdmin() {
@@ -21,16 +20,21 @@ contract ResultFeed {
         _;
     }
 
-    function setJurisdiction(string memory location)
+    function publishPositiveEncounter(string memory eid, string memory jdictionName)
         public checkAdmin()
     {
-        jurisdiction = location;
+        emit PositiveResult(eid, jdictionName);
+        positiveEIDList.push(eid);
+        feedLength++;
     }
 
-    function publishPositiveEncounter(string memory eid)
-        public checkAdmin()
+    function getLastPositiveEID()
+        public view returns (string memory eid)
     {
-        emit PositiveResult(eid, jurisdiction);
-        positiveEIDList.push(eid);
+        if (feedLength == 0) {
+            return "None";
+        } else {
+            return positiveEIDList[feedLength - 1];
+        }
     }
 }
