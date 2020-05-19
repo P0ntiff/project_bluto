@@ -2,7 +2,7 @@ import React from "react";
 import { Text, View, Button, TextInput, 
           TouchableOpacity, Modal, FlatList,
           AsyncStorage } from "react-native";
-          
+
 const mockJurisdictionNames = [
   { id: 1, title: 'Brisbane' },
   { id: 2, title: 'Cairns' },
@@ -14,6 +14,7 @@ class AuthorityView extends React.Component {
             emailKey : null, 
             phoneKey : null, 
             jurisdictionKey : null,
+            rfAddressKey : null,
             myAddress : null,
             newEmail : "",
             newPhone : "",
@@ -21,7 +22,7 @@ class AuthorityView extends React.Component {
             showContactForm: false,
             showJurisdictionForm: false,
             addedJurisdictions : [],
-            currentJurisdiction : "",
+            // currentJurisdiction: "",
           };
 
   submitContactDetailsToLedger = () => {
@@ -44,13 +45,17 @@ class AuthorityView extends React.Component {
                       {from: this.state.myAddress, gas: 1000000});
     //update state
     this.setState( { addedJurisdictions : this.state.addedJurisdictions.concat(jdiction) }, this._saveToLocalCache);
-    this.setCurrentJurisdiction(this.state.newJurisdiction);
     this.setState( { showJurisdictionForm: false} );
     this.setState( { stackId } );
   };
 
-  setCurrentJurisdiction = (title) => {
-    this.setState( { currentJurisdiction : title });
+  submitCurrentJurisdictionToLedger = (title) => {
+    const contract = this.props.drizzle.contracts.AuthorityRegistry;
+    const stackId = contract.methods.setJurisdictionForAuthority.cacheSend(
+      this.state.myAddress, title, 
+      {from: this.state.myAddress});
+    // this.setState( { currentJurisdiction: title })
+    this.setState( { stackId } );
   };
 
   _saveToLocalCache = async () => {
@@ -68,7 +73,6 @@ class AuthorityView extends React.Component {
       const value = await AsyncStorage.getItem('addedJurisdictions');
       if (value !== null) {
         this.setState ( { addedJurisdictions : JSON.parse(value) } );
-        this.setState ( {currentJurisdiction : value[0].title} );
       }
     } catch (error) {
       // error saving data
@@ -82,14 +86,7 @@ class AuthorityView extends React.Component {
             <Text numberOfLines={1} style={this.props.styles.bodyText}> {this.state.myAddress} </Text>
           </View>
   }
-
-  displayCurrentJurisdiction = () => {
-    return <View style={this.props.styles.bodySection}>
-            <Text style={this.props.styles.subHeading}> Current Jurisdiction: </Text>
-            <Text numberOfLines={1} style={this.props.styles.bodyText}> {this.state.currentJurisdiction} </Text>
-          </View>
-  }
-
+ 
   displayContactDetails = () => {
     const { AuthorityRegistry } = this.props.drizzleState.contracts;
     const email = AuthorityRegistry.getContactEmailForAuthority[this.state.emailKey];
@@ -117,9 +114,19 @@ class AuthorityView extends React.Component {
     )
   };
 
-  displayJurisdictions = () => {
+  displayResultFeedAddress = () => {
     const { AuthorityRegistry } = this.props.drizzleState.contracts;
+    const currentJurisdiction = AuthorityRegistry.getJurisdictionForAuthority[this.state.jurisdictionKey];
+    const currentRfAddress = AuthorityRegistry.getResultFeedForAuthority[this.state.rfAddressKey];
 
+    return <View style={this.props.styles.bodySection}>
+            <Text style={this.props.styles.subHeading}> Result Feed Address for {currentJurisdiction && currentJurisdiction.value}: </Text>
+            <Text numberOfLines={1} style={this.props.styles.bodyText}> {currentRfAddress && currentRfAddress.value} </Text>
+          </View>
+    
+  }
+
+  displayJurisdictions = () => {
     // if (this.state.addedJurisdictions.length == 0) {
     //   return ( 
     //     <View style={this.props.styles.bodySection}>
@@ -141,7 +148,7 @@ class AuthorityView extends React.Component {
                 <FlatList
                   data={this.state.addedJurisdictions}
                   renderItem={({ item }) => (
-                    this.displayListItem(item.title, this.setCurrentJurisdiction)
+                    this.displayListItem(item.title, this.submitCurrentJurisdictionToLedger)
                   )}
                   keyExtractor={(item, index) => item.id}
                   >
@@ -255,7 +262,10 @@ class AuthorityView extends React.Component {
     this.setState({ phoneKey });
 
     const jurisdictionKey = contract.methods.getJurisdictionForAuthority.cacheCall(myAddress);
-    this.setState( { jurisdictionKey });
+    this.setState({ jurisdictionKey });
+
+    const rfAddressKey = contract.methods.getResultFeedForAuthority.cacheCall(myAddress);
+    this.setState( { rfAddressKey });    
 
   }
 
@@ -271,7 +281,7 @@ class AuthorityView extends React.Component {
           {this.displayAddress()}          
           {this.displayContactDetails()}
           {this.displayJurisdictions()}
-          {this.displayCurrentJurisdiction()}
+          {this.displayResultFeedAddress()}
         </View>
       </View>
     );

@@ -22,7 +22,7 @@ contract AuthorityRegistry {
         address authorityAddress;
         address parentAuthority;
         string authorityName;
-        string jurisdiction;
+        string currentJurisdiction;
         ContactDetails contactDetails;
         bool exists;
     }
@@ -97,7 +97,7 @@ contract AuthorityRegistry {
         jurisdictions[jdictionName] = Jurisdiction(rfAddress, auth, true);
 
         // associate under Authority object
-        authorities[auth].jurisdiction = jdictionName;
+        authorities[auth].currentJurisdiction = jdictionName;
     }
 
     function setContactDetailsForAuthority(address authAddr, string memory phone, string memory email)
@@ -124,20 +124,23 @@ contract AuthorityRegistry {
         public checkCredentials(authAddr)
     {
         require(jurisdictions[jdictionName].exists, "jurisdiction with that name does not exist");
-        authorities[authAddr].jurisdiction = jdictionName;
+        authorities[authAddr].currentJurisdiction = jdictionName;
     }
 
     function getJurisdictionForAuthority(address authAddr)
         public view returns (string memory jdictionName)
     {
-        return authorities[authAddr].jurisdiction;
+        return authorities[authAddr].currentJurisdiction;
     }
 
-    function getResultFeedAddress(string memory jurisdiction)
+    function getResultFeedForAuthority(address authAddr)
         public view returns (address rfAddress)
+
     {
-        require(jurisdictions[jurisdiction].exists, "jurisdiction with that name does not exist");
-        return jurisdictions[jurisdiction].rfAddress;
+        string memory jdictionName = authorities[authAddr].currentJurisdiction;
+        //require(jurisdictions[jdictionName].exists, "jurisdiction with that name does not exist");
+
+        return jurisdictions[jdictionName].rfAddress;
     }
 
 }
