@@ -124,7 +124,21 @@ class AuthorityView extends React.Component {
             <Text numberOfLines={1} style={this.props.styles.bodyText}> {currentRfAddress && currentRfAddress.value} </Text>
           </View>
     
-  }
+  };
+
+  displayResultFeedInfo = () => {
+    const { AuthorityRegistry } = this.props.drizzleState.contracts;
+    const currentRfAddress = AuthorityRegistry.getResultFeedForAuthority[this.state.rfAddressKey];
+
+    const rfInstance = AuthorityRegistry.at(currentRfAddress);
+    const jdictionName = rfInstance.jurisdiction.call();
+
+    return <View style={this.props.styles.bodySection}>
+            <Text style={this.props.styles.subHeading}> Result Feed Info: </Text>
+            <Text numberOfLines={1} style={this.props.styles.bodyText}> {jdictionName} </Text>
+          </View>
+    
+  };
 
   displayJurisdictions = () => {
     // if (this.state.addedJurisdictions.length == 0) {
@@ -282,6 +296,7 @@ class AuthorityView extends React.Component {
           {this.displayContactDetails()}
           {this.displayJurisdictions()}
           {this.displayResultFeedAddress()}
+          {this.displayResultFeedInfo()}
         </View>
       </View>
     );
