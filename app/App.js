@@ -13,7 +13,7 @@ import UserView from "./UserView";
 
 type Props = {};
 export default class App extends Component<Props> {
-  state = { loading: true, drizzleState: null, authViewEnabled: true };
+  state = { loading: true, drizzleState: null, authViewEnabled: false };
 
   componentDidMount() {
     const { drizzle } = this.props;

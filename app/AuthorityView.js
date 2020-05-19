@@ -38,13 +38,12 @@ class AuthorityView extends React.Component {
             newEmail : "",
             newPhone : "",
             newJurisdiction: "",
+            addedJurisdictions : [],
             showContactForm: false,
             showJurisdictionForm: false,
             showReviewMessage: false,
             messageToReview: true,
             inboxMessage: null,
-            addedJurisdictions : [],
-            // currentJurisdiction: "",
           };
 
   submitContactDetailsToLedger = () => {

@@ -115,6 +115,13 @@ contract AuthorityRegistry {
         return authorities[authAddr].contactDetails.emailAddress;
     }
 
+    function getNameForAuthority(address authAddr)
+        public view returns (string memory name)
+    {
+        require(authorities[authAddr].exists, "requested authority does not exist");
+        return authorities[authAddr].authorityName;
+    }
+
     function setCurrentJurisdiction(address authAddr, string memory jdictionName)
         public checkCredentials(authAddr)
     {
