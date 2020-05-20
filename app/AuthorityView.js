@@ -9,18 +9,17 @@ import { Text, View, Button, TextInput,
 //   { id: '3', title: 'Townsville' },
 // ];
 
-const mockInboxMessage = {
-    name: "Anonymous",
-    pdf: "Positive Result.pdf",
-    eidList: [
-      {eid: '31d152228b'},
-      {eid: '438ab85cdf'},
-      {eid: '3e9aa49aec'},
-      {eid: 'e789b60281'},
-    ],
+// const mockInboxMessage = {
+//     name: "Anonymous",
+//     pdf: "Positive Result.pdf",
+//     eidList: [
+//       {eid: '31d152228b'},
+//       {eid: '438ab85cdf'},
+//       {eid: '3e9aa49aec'},
+//       {eid: 'e789b60281'},
+//     ],
     
-}
-
+// }
 
 class AuthorityView extends React.Component {
   state = { stackId : null, 
@@ -95,9 +94,18 @@ class AuthorityView extends React.Component {
     });
     this.setState( { showReviewMessage: false} );
     this.setState( { messageToReview: false} );
-
-
+    this._clearInbox();
   };
+
+  _clearInbox = async () => {
+    try {
+      await AsyncStorage.setItem('inboxMessage', null);      
+    } catch (error) {
+      // error saving data
+      alert(error.message);
+    }
+  };
+
 
   _saveToLocalCache = async () => {
     try {

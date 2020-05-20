@@ -83,10 +83,12 @@ class UserView extends React.Component {
             phoneKey : null, 
             jurisdictionKey : null,
             lastPositiveEidKey : null,
+            eventsKey : null,
             showEmailForm : false,
             showEncounter : false,
             encounterInView : null,
-            encounters: [],
+            encounters : [],
+            exposedID : null,
             pdfTitle: "",
             lastEncounter: ""
           };
@@ -137,13 +139,25 @@ class UserView extends React.Component {
     try {
       const encounters = await AsyncStorage.getItem('encounters');
       if (encounters !== null) {
-        this.setState ( { encounters : JSON.parse(encounters) } );
+        this.setState ( { encounters : JSON.parse(encounters) }, this.checkExposureFromLedger);
       }
     } catch (error) {
       // error saving data
       alert(error.message);
     }
-  }
+  };
+
+  checkExposureFromLedger = () => {
+    const eventList = this.props.drizzleState.contracts.ResultFeed.events;
+    eventList.forEach( (event) => {
+      this.state.encounters.forEach( (encounter) => {
+        //console.log(encounter.eid);
+        if (encounter.eid === event.returnValues.eid) {
+          this.setState( { exposedID : event.returnValues.eid } );
+        }
+      });
+    });
+  };
   
   displayAddress = () => {
     return <View style={this.props.styles.bodySection}>
@@ -247,14 +261,19 @@ class UserView extends React.Component {
       </Modal>
   )};
 
-  displayExposureStatus = () => {
+  displayExposureStatus = () => {    
     const { ResultFeed } = this.props.drizzleState.contracts;
-    // do something with events (another function?)
-    
+
+    //const events = this.props.drizzleState.events
+
     return <View style={this.props.styles.bodySection}>
             <Text style={this.props.styles.subHeading}> Exposure Status: </Text>
             <View style={this.props.styles.listBox}>
+            {this.state.exposedID ? (
+              <Text style={[this.props.styles.title, { color : '#4B0082', textAlign: 'left'}]}> Exposed by {this.state.exposedID} </Text>
+            ) : (
               <Text style={[this.props.styles.title, { color : '#008000', textAlign: 'left'}]}> Safe </Text>
+            )}
             </View>
           </View>
   };
@@ -326,7 +345,6 @@ class UserView extends React.Component {
   };
 
   displayEncounterItem = (encounter, itemStyle) => {
-    console.log(encounter);
     if (encounter == null) {
       return null;
     }
@@ -366,7 +384,14 @@ class UserView extends React.Component {
 
     // result feed on-chain state
     const lastPositiveEidKey = rfContract.methods.getLastPositiveEID.cacheCall();
-    this.setState( { lastPositiveEidKey });    
+    this.setState( { lastPositiveEidKey });
+
+
+    // check exposure from ledger data
+    //this.checkExposureFromLedger();
+    // const eventsKey = rfContract.events.allEvents.call();
+    // this.setState( { eventsKey });
+    //const eventKey = rfContract.returnValues.
 
   }
 
