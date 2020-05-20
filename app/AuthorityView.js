@@ -12,18 +12,12 @@ import { Text, View, Button, TextInput,
 const mockInboxMessage = {
     name: "Anonymous",
     pdf: "Positive Result.pdf",
-    eidListDisplay: [
-      {id: '1', title: '31d152228b'},
-      {id: '2', title: '438ab85cdf'},
-      {id: '3', title: '3e9aa49aec'},
-      {id: '4', title: 'e789b60281'},
+    eidList: [
+      {eid: '31d152228b'},
+      {eid: '438ab85cdf'},
+      {eid: '3e9aa49aec'},
+      {eid: 'e789b60281'},
     ],
-    eidListPublish: [
-        '31d152228b',
-        '438ab85cdf',
-        '3e9aa49aec',
-        'e789b60281',
-    ]
     
 }
 
@@ -42,7 +36,7 @@ class AuthorityView extends React.Component {
             showContactForm: false,
             showJurisdictionForm: false,
             showReviewMessage: false,
-            messageToReview: true,
+            messageToReview: false,
             inboxMessage: null,
           };
 
@@ -83,13 +77,16 @@ class AuthorityView extends React.Component {
     const { AuthorityRegistry } = this.props.drizzleState.contracts;
     const currentJurisdiction = AuthorityRegistry.getCurrentJurisdiction[this.state.jurisdictionKey];
     // get EID list from inbox
-    const eidList = this.state.inboxMessage.eidListPublish;
+    var eidListPublish = [];
+    this.state.inboxMessage.eidList.forEach( (item) => {
+      eidListPublish.push(item.eid);
+    });
     // console.log(eidList[0]);
     // console.log(currentJurisdiction);
     // send to result feed (publish)
     const rfContract = this.props.drizzle.contracts.ResultFeed;
     // run as a batch of commands
-    eidList.map( item => {
+    eidListPublish.map( item => {
       // console.log(item);
       const stackId = rfContract.methods.publishExposureNotification.cacheSend(
         item, currentJurisdiction.value, 
@@ -97,6 +94,8 @@ class AuthorityView extends React.Component {
       this.setState( { stackId } );
     });
     this.setState( { showReviewMessage: false} );
+    this.setState( { messageToReview: false} );
+
 
   };
 
@@ -116,26 +115,26 @@ class AuthorityView extends React.Component {
       if (addedList !== null) {
         this.setState ( { addedJurisdictions : JSON.parse(addedList) } );
       }
-      //const newMessage = await AsyncStorage.getItem('newMessage');
-      const newMessage = mockInboxMessage;
+      // check inbox for new message
+      const newMessage = await AsyncStorage.getItem('inboxMessage');
+      //const newMessage = mockInboxMessage;
       if (newMessage !== null) {
-        //this.setState ( { newMessage : JSON.parse(newMessage)})
-        this.setState ( { inboxMessage : newMessage} )
-        this.setState ( { messageToReview : true } )
-
+        this.setState ( { inboxMessage : JSON.parse(newMessage)});
+        //this.setState ( { inboxMessage : newMessage} )
+        this.setState ( {  messageToReview : true } );
       }
     } catch (error) {
       // error saving data
       alert(error.message);
     }
-  }
+  };
 
   displayAddress = () => {
     return <View style={this.props.styles.bodySection}>
             <Text style={this.props.styles.subHeading}> Authority address: </Text>
             <Text numberOfLines={1} style={this.props.styles.bodyText}> {this.state.myAddress} </Text>
           </View>
-  }
+  };
  
   displayContactDetails = () => {
     const { AuthorityRegistry } = this.props.drizzleState.contracts;
@@ -212,7 +211,7 @@ class AuthorityView extends React.Component {
           <View style={this.props.styles.bodySectionButtonRow}>
             <View style={this.props.styles.listBox}>
               <View style={[this.props.styles.listItem, { width: 140 }]}> 
-                <Text style={this.props.styles.listText}>From: {this.state.inboxMessage ? this.state.inboxMessage.name : null}</Text>
+                <Text numberOfLines={1} style={this.props.styles.listText}>From: {this.state.inboxMessage ? this.state.inboxMessage.name : null}</Text>
               </View>
             </View>
             <View style={{justifyContent : 'center'}}>
@@ -227,23 +226,6 @@ class AuthorityView extends React.Component {
         )}
       </View>
     )
-  };
-
-  getTxStatus = () => {
-    // get the transaction states from the drizzle state
-    const { transactions, transactionStack } = this.props.drizzleState;
-
-    // get the transaction hash using our saved `stackId`
-    const txHash = transactionStack[this.state.stackId];
-
-    // if transaction hash does not exist, don't display anything
-    if (!txHash) return null;
-
-    // otherwise, return the transaction status
-    if (transactions[txHash] && transactions[txHash].status)
-      return `Txn ${transactions[txHash].status}`;
-
-    return null;
   };
   
   displayContactForm = () => {
@@ -299,7 +281,7 @@ class AuthorityView extends React.Component {
           <View style={this.props.styles.modalInnerView}>
             <Text style={this.props.styles.modalTitle}> Review Message </Text>
             <Text style={this.props.styles.subHeading}> From:  </Text>
-            <Text style={this.props.styles.bodyText}> {this.state.inboxMessage ? this.state.inboxMessage.name : null} </Text>
+            <Text numberOfLines={1} style={this.props.styles.bodyText}> {this.state.inboxMessage ? this.state.inboxMessage.name : null} </Text>
             <View style={{marginBottom: 15}}></View>
             <Text style={this.props.styles.subHeading}> PDF Attachment:  </Text>
             <Text style={this.props.styles.bodyText}> {this.state.inboxMessage ? this.state.inboxMessage.pdf : null} </Text>
@@ -308,11 +290,11 @@ class AuthorityView extends React.Component {
             <View style={this.props.styles.listBox}>
               {this.state.inboxMessage ? (
                 <FlatList
-                  data={this.state.inboxMessage.eidListDisplay}
+                  data={this.state.inboxMessage.eidList}
                   renderItem={({ item }) => (
-                    this.displayListItem(item.title, null, this.props.styles.modalListItem)
+                    this.displayListItem(item.eid, null, this.props.styles.modalListItem)
                   )}
-                  keyExtractor={(item, index) => item.id}
+                  keyExtractor={(item, index) => item.eid}
                   >
                 </FlatList>
               ) : ( 
@@ -330,12 +312,29 @@ class AuthorityView extends React.Component {
   displayListItem = (text, onSelect, itemStyle) => {
     return (
       <TouchableOpacity
-        onPress={() => onSelect(text)}
+        onPress={onSelect != null ? ( () => onSelect(text) ) : (null)}
         style={itemStyle}
       >
         <Text style={this.props.styles.listText}>{text}</Text>
       </TouchableOpacity>
     );  
+  };
+
+  getTxStatus = () => {
+    // get the transaction states from the drizzle state
+    const { transactions, transactionStack } = this.props.drizzleState;
+
+    // get the transaction hash using our saved `stackId`
+    const txHash = transactionStack[this.state.stackId];
+
+    // if transaction hash does not exist, don't display anything
+    if (!txHash) return null;
+
+    // otherwise, return the transaction status
+    if (transactions[txHash] && transactions[txHash].status)
+      return `Txn ${transactions[txHash].status}`;
+
+    return null;
   };
 
   componentDidMount() {

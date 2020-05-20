@@ -103,6 +103,27 @@ class UserView extends React.Component {
     }, this._saveToLocalCache);
   };
 
+  _sendMessageToAuthority = async () => {
+    //simulates an off-chain channel by saving an inbox message object in the local app cache storage
+    var eidList = [];
+    this.state.encounters.forEach( (item) => {
+      eidList.push({ eid : item.eid });
+    });
+    const inboxMessage = {
+      name: this.state.myAddress,
+      pdf: this.state.pdfTitle,
+      eidList: eidList,
+    }
+    try { 
+      await AsyncStorage.setItem('inboxMessage', JSON.stringify(inboxMessage));
+    } catch (error) {
+      alert(error.message);
+    }
+    // cache encounter list here
+    this._saveToLocalCache();
+    this.setState( { showEmailForm: false })
+  };
+
   _saveToLocalCache = async () => {
     try {
       await AsyncStorage.setItem('encounters', JSON.stringify(this.state.encounters));
@@ -220,7 +241,7 @@ class UserView extends React.Component {
             </View>
             <View style={{marginBottom: 30}}></View>
 
-            <Button title="Submit" color="#008000" onPress={() => { this._saveToLocalCache(); this.setState( { showEmailForm: false })}} />
+            <Button title="Submit" color="#008000" onPress={this._sendMessageToAuthority} />
           </View>
         </View>
       </Modal>
